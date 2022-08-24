@@ -1,0 +1,31 @@
+{
+  "name": "opendsm-client",
+  "version": "0.0.1",
+  "description": "The client application for OpenDSM - The Open Digital Software Marketplace",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DcmanProductions/OpenDSM-Client.git"
+  },
+  "keywords": [
+    "DSM",
+    "Open",
+    "DSM",
+    "OpenSource",
+    "Digital",
+    "Software",
+    "Marketplace"
+  ],
+  "author": "Drew Chase",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DcmanProductions/OpenDSM-Client/issues"
+  },
+  "homepage": "https://github.com/DcmanProductions/OpenDSM-Client#readme",
+  "dependencies": {
+    "electron": "^20.0.3"
+  }
+}
