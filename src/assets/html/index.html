@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="../">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="keywords" content="DSM, dsm, opensource, software, marketplace, market, program, linux, windows, mac, osx, apps, applications, development, developers, open dsm, opendsm, open">
+    <meta property="og:image" content="images/wallpapers/opendsm-wallpaper-centered-logo.jpg" />
+    <meta property="og:title" content="OpenDSM - The Open Digital Software Marketplace" />
+    <meta property="og:description" content="The Open Digital Software Marketplace" />
+    <meta name="description" content="The Open Digital Software Marketplace">
+
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="lib/fontawesome/css/all.min.css">
+    <script>
+        window.$ = window.jQuery = require('../lib/jquery.js');
+    </script>
+    <link rel="shortcut icon" href="images/logo.svg" type="image/x-icon">
+    <title>OpenDSM</title>
+</head>
+
+<body>
+    <partial controller="_SHARED_" name="nav"></partial>
+    <main>
+    </main>
+    <partial controller="_SHARED_" name="footer"></partial>
+    <div id="popup">
+        <div id="popup-bg"></div>
+        <div id="popup-content">
+            <div class="title">
+                <span id="popup-close-btn">X</span>
+            </div>
+            <div class="content">
+            </div>
+        </div>
+    </div>
+    <script src="js/LoadingScreen.js"></script>
+    <script src="js/popup.js"></script>
+    <script src="js/elements.js"></script>
+    <script src="js/dsmplayer.js"></script>
+    <script src="js/login.js"></script>
+    <script src="js/page-load.js"></script>
+</body>
+
+</html>
