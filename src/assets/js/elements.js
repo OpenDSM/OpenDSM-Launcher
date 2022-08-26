@@ -33,10 +33,10 @@ function KickStars(stars) {
     }, 50);
 }
 function InitElements() {
-    Array.from($(".profile-banner")).forEach(i => {
+    Array.from($(".profile-banner.personal")).forEach(i => {
         i.style.backgroundImage = `url('${BannerImage()}')`
     })
-    Array.from($(".profile-image")).forEach(i => {
+    Array.from($(".profile-image.personal")).forEach(i => {
         i.style.backgroundImage = `url('${ProfileImage()}')`
     })
     Array.from($(".users-name")).forEach(i => {
