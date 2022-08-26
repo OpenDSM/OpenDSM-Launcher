@@ -33,21 +33,29 @@ async function LoadPageElements() {
 
 }
 
-async function Navigate(controller, name) {
+async function Navigate(controller, name, args = []) {
     let loading = new LoadingScreen(`Loading...`, "")
     let url = `html/${controller}/${name}.html`
-    page = {controller: controller, name: name, url: url}
+    page = { controller: controller, name: name, url, args }
     if (!await IsLoggedIn()) {
         url = `html/Auth/login.html`
-        page = {controller: "Auth", name: "login", url: url}
+        page = { controller: "Auth", name: "login", url, args }
+        await $("main").load(url);
+        await LoadPageElements();
+        setTimeout(() => {
+            InitElements();
+            $("#hamburger-menu-item")[0].style.display = "none";
+        }, 500)
+        loading.unload();
+    } else {
+        await $("main").load(url);
+        await LoadPageElements();
+        setTimeout(() => {
+            InitElements();
+            $("#hamburger-menu-item")[0].style.display = "";
+        }, 500)
+        loading.unload();
     }
-    console.log(`navigating to ${JSON.stringify(page)}`)
-    await $("main").load(url);
-    await LoadPageElements();
-    setTimeout(() => {
-        InitElements();
-    }, 500)
-    loading.unload();
 }
 
 async function LoadWindowDecoration() {
@@ -64,6 +72,7 @@ async function LoadWindowDecoration() {
 async function IsLoggedIn() {
     if (user != null) return true;
     let cookies = await ipcRenderer.invoke("getCookies", {});
+    console.log(cookies)
     if (cookies.length == 0) return false;
     let email = "";
     let token = "";
@@ -84,7 +93,11 @@ async function IsLoggedIn() {
             if (response.ok) {
                 let json = await response.json();
                 if (json.success) {
-                    user = json.user;
+                    response = await fetch(`http://opendsm.tk/api/auth/user?id=${json.user.id}&includeImages=true`)
+                    if (response.ok) {
+                        json = await response.json();
+                        user = json;
+                    }
                     return true;
                 }
             }
@@ -95,9 +108,20 @@ async function IsLoggedIn() {
     return false;
 }
 
-function ProfileImage(){
+function ProfileImage() {
     return `data:image/jpeg;base64,${user.images.profile}`
 }
-function BannerImage(){
+function BannerImage() {
     return `data:image/jpeg;base64,${user.images.banner}`
+}
+
+async function CreateProductElement(id) {
+    let response = await fetch(`http://opendsm.tk/api/product/`)
+}
+ipcRenderer.on('navigate', (event, arg) => {
+    Navigate(arg.controller, arg.name, arg.args)
+})
+
+async function checkCookies(){
+    console.log(JSON.stringify(await ipcRenderer.invoke("getCookies", {})))
 }
