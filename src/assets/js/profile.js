@@ -1,7 +1,56 @@
+var personal = page.args.length == 0;
+var id = Number.parseInt(personal ? user.id : page.args[0].id)
+var pageUser = null;
+InitElementValues()
+async function InitElementValues() {
+
+    if (personal) {
+        pageUser = user;
+        personalSection = $("section#personal")[0];
+        let html = await $.get('html/Auth/profile-sections/personal-section.html');
+        personalSection.outerHTML = html;
+        if (user.createdProducts.length != 0) {
+            analSection = $("section#analytics")[0];
+            let html = await $.get('html/Auth/profile-sections/analytics.html');
+            analSection.innerHTML = html;
+            analSection.style.display = "";
+        }
+        // Username
+        $("#username-box")[0].placeholder = user.username;
+        $("#about-box")[0].value = user.about
+        $("#dev-btn")[0].innerText = user.git.isDeveloperAccount ? "Create Product" : "Activate Developer Account"
+        $("#dev-btn").on('click', () => {
+            if (user.git.isDeveloperAccount) {
+                Navigate("Product", "create");
+            } else {
+                new ActivateDeveloperAccountPopup().open()
+            }
+        })
+        $("#upload-profile-banner")[0].style.backgroundImage = $("#landing.profile")[0].style.backgroundImage = `url('${BannerImage()}')`
+        $("#upload-profile-image")[0].style.backgroundImage = $("#landing .profile-image")[0].style.backgroundImage = `url('${ProfileImage()}')`
+    } else {
+        let response = await fetch(`http://opendsm.tk/api/auth/user?id=${id}&includeImages=true`);
+        if(response.ok){
+            let json = await response.json();
+            pageUser = json;
+        }
+    }
+   $("#landing.profile")[0].style.backgroundImage = `url('data:image/jpeg;base64,${pageUser.images.banner}')`
+    $("#landing .profile-image")[0].style.backgroundImage = `url('data:image/jpeg;base64,${pageUser.images.profile}')`
+
+    if (pageUser.git.useReadme)
+        updateAbout(pageUser.git.readme)
+    else
+        updateAbout(pageUser.about)
+}
+
+
+
 $("#logout-btn").on('click', () => {
-    document.cookie = `auth_token=null; expires=${new Date("2000").toUTCString()};path=/`
-    document.cookie = `auth_email=null; expires=${new Date("2000").toUTCString()};path=/`
-    window.location.href = "/"
+    user = null;
+    ipcRenderer.send("setCookies", { name: "auth_email", value: "", path: "/", url: "http://opendsm.tk", expirationDate: new Date("2000").toUTCString() })
+    ipcRenderer.send("setCookies", { name: "auth_token", value: "", path: "/", url: "http://opendsm.tk", expirationDate: new Date("2000").toUTCString() })
+    Navigate("Auth", "login")
 })
 
 $("#save-profile-btn").on('click', async () => {
@@ -23,7 +72,7 @@ $("#about-box").on('keyup', e => {
 })
 function updateAbout(html) {
     let converter = new showdown.Converter()
-    $("#about-rendering")[0].innerHTML = converter.makeHtml(user.readme);
+    $("#about-rendering")[0].innerHTML = converter.makeHtml(html);
 }
 async function loadAbout(git) {
     $("#about-rendering")[0].innerHTML = "";
