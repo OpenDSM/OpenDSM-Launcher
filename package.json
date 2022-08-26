@@ -4,7 +4,11 @@
   "description": "The client application for OpenDSM - The Open Digital Software Marketplace",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "package-win": "electron-packager . OpenDSM --platform=win32 --out ./builds --overwrite --icon=src\\assets\\images\\icons\\icon.ico",
+    "package-linux": "electron-packager . OpenDSM --platform=linux --asar --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png",
+    "package-mac": "electron-packager . OpenDSM --platform=darwin,mas --asar --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png"
+
   },
   "repository": {
     "type": "git",
@@ -25,7 +29,7 @@
     "url": "https://github.com/DcmanProductions/OpenDSM-Client/issues"
   },
   "homepage": "https://github.com/DcmanProductions/OpenDSM-Client#readme",
-  "dependencies": {
-    "electron": "^20.0.3"
+  "devDependencies": {
+    "electron": "^20.1.0"
   }
 }
