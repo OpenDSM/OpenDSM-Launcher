@@ -39,13 +39,18 @@ async function Login(username, password) {
                 error(json.message)
             } else {
                 user = json.user;
+                let emailCookie;
+                let tokenCookie;
+
                 if ($("#remember-me-toggle").attr('value') == "true") {
-                    ipcRenderer.send("setCookies", { name: "auth_email", value: json.user.email+"", path: "/", url: "http://opendsm.tk", expirationDate: new Date("3000").toUTCString() })
-                    ipcRenderer.send("setCookies", { name: "auth_token", value: json.user.token+"", path: "/", url: "http://opendsm.tk", expirationDate: new Date("3000").toUTCString() })
+                    emailCookie = { name: "auth_email", value: json.user.email + "", path: "/", url: "http://opendsm.tk", expirationDate: new Date("3000").getTime()};
+                    tokenCookie = { name: "auth_token", value: json.user.token + "", path: "/", url: "http://opendsm.tk", expirationDate: new Date("3000").getTime() };
                 } else {
-                    ipcRenderer.send("setCookies", { name: "auth_email", value: json.user.email+"", path: "/", url: "http://opendsm.tk" })
-                    ipcRenderer.send("setCookies", { name: "auth_token", value: json.user.token+"", path: "/", url: "http://opendsm.tk" })
+                    emailCookie = { name: "auth_email", value: json.user.email + "", path: "/", url: "http://opendsm.tk" }
+                    tokenCookie = { name: "auth_token", value: json.user.token + "", path: "/", url: "http://opendsm.tk" }
                 }
+                ipcRenderer.send("setCookies", emailCookie);
+                ipcRenderer.send("setCookies", tokenCookie);
                 Navigate("Home", "index")
             }
         } else
