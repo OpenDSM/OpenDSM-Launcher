@@ -90,28 +90,28 @@ $("#submit-btn").on('click', async () => {
         Array.from($(".tmp-gallery-image")).forEach(item => {
             galleryImages.push(item.style.backgroundImage.replace("url(", "").replace(")", "").replaceAll("\"", "").replaceAll("'", ""))
         })
-        let data = new FormData();
-        data.append("name", projectName);
-        data.append("gitRepoName", repoName);
-        data.append("user_id", user_id);
-        if (youtubeKey != "") {
-            data.append("yt_key", youtubeKey);
-        }
-        data.append("subscription", subscription);
-        data.append("price", price);
-        data.append(`keywords`, keywords.toLowerCase());
-        data.append(`tags`, tags);
-        data.append("icon", icon);
-        data.append("banner", banner);
-        data.append("use_git_readme", useGitReadme);
+        let data = {
+            name: projectName,
+            gitRepoName: repoName,
+            user_id: user_id,
+            yt_key: youtubeKey,
+            subscription,
+            price,
+            keywords: keywords.toLowerCase(),
+            tags,
+            icon,
+            banner,
+            use_git_readme: useGitReadme,
+        };
         if (galleryImages.length > 0) {
             for (let i = 0; i < galleryImages.length; i++) {
                 if (galleryImages[i] != null && galleryImages[i] != "")
+                    
                     data.append(`gallery[${i}]`, galleryImages[i]);
             }
         }
         let loadingScreen = new LoadingScreen("Creating Product", "This may take a moment...");
-        let response = await fetch("/api/product", { method: "POST", body: data });
+        let response = await APICall("product", "", "POST", null, data)
         if (response.ok) {
             let json = await response.json();
             window.location.href = `/product/${json.id}`
