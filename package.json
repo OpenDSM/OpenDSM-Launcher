@@ -6,9 +6,8 @@
   "scripts": {
     "start": "electron .",
     "package-win": "electron-packager . OpenDSM --platform=win32 --out ./builds --overwrite --icon=src\\assets\\images\\icons\\icon.ico",
-    "package-linux": "electron-packager . OpenDSM --platform=linux --asar --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png",
-    "package-mac": "electron-packager . OpenDSM --platform=darwin,mas --asar --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png"
-
+    "package-linux": "electron-packager . OpenDSM --platform=linux --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png",
+    "package-mac": "electron-packager . OpenDSM --platform=darwin,mas --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png"
   },
   "repository": {
     "type": "git",
