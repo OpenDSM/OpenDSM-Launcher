@@ -26,7 +26,7 @@ function search() {
         result.classList.remove('throbber');
     } else {
         queue.push(query);
-        fetch(`/api/search/${category}?query=${query}&maxSize=20`).then(r => {
+        fetch(`${host}/api/search/${category}?query=${query}&maxSize=20`).then(r => {
             queue.splice(queue.findIndex(e => e == query), 1)
             return r.json()
         }).then(json => {
@@ -88,7 +88,7 @@ function MakeUserSearchItem(json) {
 
     let icon = document.createElement('div');
     icon.classList.add('search-item-icon');
-    icon.style.backgroundImage = `url('/api/auth/image/profile?id=${json.id}')`;
+    icon.style.backgroundImage = `url('${host}/api/auth/image/profile?id=${json.id}')`;
 
     let body = document.createElement('div');
     body.classList.add("list", 'vertical');
@@ -101,7 +101,7 @@ function MakeUserSearchItem(json) {
     products.innerText = `${json.products} Products`;
 
     let bg = document.createElement('img');
-    bg.src = `/api/auth/image/banner?id=${json.id}`;
+    bg.src = `${host}/api/auth/image/banner?id=${json.id}`;
     bg.classList.add('search-item-bg');
 
     body.appendChild(name)
