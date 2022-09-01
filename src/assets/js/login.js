@@ -32,7 +32,7 @@ async function Login(username, password) {
     data.append('password', password);
     try {
         let loading = new LoadingScreen("Hold on!", "Were checking some stuff!")
-        let response = await fetch('http://opendsm.tk/api/auth/login', { method: "POST", body: data })
+        let response = await fetch(`${host}/api/auth/login`, { method: "POST", body: data })
         if (response.ok) {
             let json = await response.json();
             if (!json.success) {
@@ -43,11 +43,11 @@ async function Login(username, password) {
                 let tokenCookie;
 
                 if ($("#remember-me-toggle").attr('value') == "true") {
-                    emailCookie = { name: "auth_email", value: json.user.email + "", path: "/", url: "http://opendsm.tk", expirationDate: new Date("3000").getTime()};
-                    tokenCookie = { name: "auth_token", value: json.user.token + "", path: "/", url: "http://opendsm.tk", expirationDate: new Date("3000").getTime() };
+                    emailCookie = { name: "auth_email", value: json.user.email + "", path: "/", url: host, expirationDate: new Date("3000").getTime()};
+                    tokenCookie = { name: "auth_token", value: json.user.token + "", path: "/", url: host, expirationDate: new Date("3000").getTime() };
                 } else {
-                    emailCookie = { name: "auth_email", value: json.user.email + "", path: "/", url: "http://opendsm.tk" }
-                    tokenCookie = { name: "auth_token", value: json.user.token + "", path: "/", url: "http://opendsm.tk" }
+                    emailCookie = { name: "auth_email", value: json.user.email + "", path: "/", url: host }
+                    tokenCookie = { name: "auth_token", value: json.user.token + "", path: "/", url: host }
                 }
                 ipcRenderer.send("setCookies", emailCookie);
                 ipcRenderer.send("setCookies", tokenCookie);
