@@ -82,7 +82,7 @@ async function Signup(email, username, password) {
     data.append('email', email);
     data.append('password', password);
     try {
-        let response = await fetch('/api/auth/signup', { method: "POST", body: data })
+        let response = await fetch(`${host}/api/auth/signup`, { method: "POST", body: data })
         if (response.ok) {
             let json = await response.json();
             if (!json.success) {
