@@ -8,7 +8,7 @@ class Popup {
         if ($("#popup .content")[0].innerHTML.trim() != "") {
             await new Promise(r => setTimeout(r, 700))
         }
-        let html = await $.get(`html/_POPUP_/${this.name}.html`);
+        let html = await $.get(`html/_popup_/${this.name}.html`);
         $("#popup .content")[0].innerHTML = html;
         $("#popup")[0].classList.add('active')
         $("body")[0].style.overflow = "hidden"
@@ -62,6 +62,25 @@ class ErrorPopup extends CenteredPopup {
         await super.open();
         $("#error-title")[0].innerText = this.title;
         $("#error-body")[0].innerHTML = this.message;
+    }
+}
+
+class OpenExternalLinkPopup extends CenteredPopup {
+    url;
+    constructor(url) {
+        super("open-external-link")
+        this.url = url;
+    }
+    async open() {
+        let element = await super.open();
+        $(element).find("#link-url")[0].innerHTML = this.url;
+        $(element).find('#open-btn.btn').on('click', () => {
+            ipcRenderer.send("extern", this.url)
+            this.close();
+        })
+        $(element).find('#cancel-btn.btn').on('click', () => {
+            this.close();
+        })
     }
 }
 
@@ -158,7 +177,7 @@ class DownloadPopup extends CenteredPopup {
     async open() {
         let element = await super.open();
         let link = $(element).find("#download-link")[0];
-        link.href = `/api/product/${this.id}/version/${this.version_id}?platform=${this.platform}`;
+        link.href = `${host}/api/product/${this.id}/version/${this.version_id}?platform=${this.platform}`;
         link.download = `${this.product_name}-${this.platform}-${this.version_name}.zip`
         link.click();
     }
@@ -237,31 +256,21 @@ class ActivateDeveloperAccountPopup extends Popup {
             if (git_username == "" || git_token == "") {
                 alert('Git Username and Token MUST be filled out!');
             } else {
-                let email, token;
-                Array.from(document.cookie.split(';')).forEach(item => {
-                    let key = item.split("=")[0].trim()
-                    if (key == "auth_email") {
-                        email = item.replace(key + "=", "");
-                    }
-                    if (key == "auth_token") {
-                        token = item.replace(key + "=", "");
-                    }
-                })
+                let headers = new Headers();
+                headers.append("cookies", "[{},{}]")
 
                 let data = new FormData();
-
-                data.append("email", email);
-                data.append("token", token);
                 data.append("git_username", git_username)
                 data.append("git_token", git_token)
-
-                let response = await fetch("/api/auth/activate-dev-account", { method: "POST", body: data })
+                let loading = new LoadingScreen("Checking Credentials...", "This shouldn't take long...")
+                let response = await fetch(`${host}/api/auth/activate-dev-account`, { method: "POST", body: data, headers: { } })
 
                 if (response.ok) {
                     window.location.reload();
                 } else {
                     alert("Unable to activate account! Please check your credentials!");
                 }
+                loading.unload();
             }
         })
     }
@@ -282,7 +291,7 @@ class YoutubeSearchPopup extends CenteredPopup {
         $("#load-yt-list").on("click", async () => {
             let id = $("#channel-id")[0].value;
             let loading = new LoadingScreen("Getting Youtube Videos", "This may take a moment...");
-            let response = await fetch(`/api/yt/channel/${id}`)
+            let response = await fetch(`${host}/api/yt/channel/${id}`)
             loading.unload();
             $("body")[0].style.overflow = "hidden"
             if (response.ok) {
@@ -341,7 +350,7 @@ class SearchFilterPopup extends Popup {
     }
 
     async open() {
-       await super.open();
+        await super.open();
         setTimeout(() => {
             $(".search-category").on('click', e => {
                 let parts = window.location.search.split("?category=").pop().split("&");
@@ -443,7 +452,7 @@ class CreateVersionPopup extends Popup {
                 data.append("type", releaseType)
                 data.append("changelog", changelog);
 
-                let response = await fetch(`/api/product/${this.product_id}/version`, { method: "POST", body: data });
+                let response = await fetch(`${host}/api/product/${this.product_id}/version`, { method: "POST", body: data });
                 let itemsUploaded = 0;
                 if (response.ok) {
                     let json = await response.json();
@@ -469,7 +478,7 @@ class CreateVersionPopup extends Popup {
                         try {
                             let data = new FormData()
                             data.append("file", i.files[0]);
-                            let response = await fetch(`/api/product/${this.product_id}/version/${version_id}/asset?platform=${name}`, { method: "POST", body: data })
+                            let response = await fetch(`${host}/api/product/${this.product_id}/version/${version_id}/asset?platform=${name}`, { method: "POST", body: data })
                             itemsUploaded++;
                             icon.classList.remove('throbber');
                             if (response.ok) {
@@ -502,7 +511,7 @@ class CreateVersionPopup extends Popup {
                         header.appendChild(icon);
                         header.append(name);
                         uploadTasks.appendChild(header);
-                        await fetch(`/api/product/${id}/version/check`, { method: "POST" })
+                        await fetch(`${host}/api/product/${id}/version/check`, { method: "POST" })
                         await LoadVersions()
                         icon.classList.remove('throbber');
                         icon.classList.add('fa', 'fa-check');
@@ -553,7 +562,7 @@ class EditVersionPopup extends Popup {
             data.append('changelog', changelog)
             data.append('type', release)
 
-            let response = await fetch(`/api/product/${this.ProductID}/version/${this.ID}`, { method: "PATCH", body: data })
+            let response = await fetch(`${host}/api/product/${this.ProductID}/version/${this.ID}`, { method: "PATCH", body: data })
             console.log(response)
             if (!response.ok) {
                 let json = await response.json();
@@ -583,7 +592,7 @@ class DeleteVersionPopup extends CenteredPopup {
             let loading = new LoadingScreen("Deleting Version", "Don't go anywhere!")
 
             this.close();
-            let response = await fetch(`/api/product/${this.ProductID}/version/${this.ID}`, { method: "DELETE" })
+            let response = await fetch(`${host}/api/product/${this.ProductID}/version/${this.ID}`, { method: "DELETE" })
 
             if (!response.ok) {
                 let json = await response.json();
