@@ -129,7 +129,7 @@ async function LoadReviews(rating = -1) {
             data.append("rating", Number.parseInt($(ratingInput).attr("value")));
             data.append("body", bodyInput.value);
             data.append("summery", subjectInput.value);
-            let response = await fetch(`/api/product/${id}/reviews`, { method: 'POST', body: data })
+            let response = await fetch(`${host}/api/product/${id}/reviews`, { method: 'POST', body: data })
             if (!response.ok) {
                 try {
                     let json = await response.json();
