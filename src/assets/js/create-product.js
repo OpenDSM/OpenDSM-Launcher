@@ -106,11 +106,10 @@ $("#submit-btn").on('click', async () => {
         if (galleryImages.length > 0) {
             for (let i = 0; i < galleryImages.length; i++) {
                 if (galleryImages[i] != null && galleryImages[i] != "")
-                    
                     data.append(`gallery[${i}]`, galleryImages[i]);
             }
         }
-        let loadingScreen = new LoadingScreen("Creating Product", "This may take a moment...");
+        let loadingScreen = new LoadingScreen("Creating Product");
         let response = await APICall("product", "", "POST", null, data)
         if (response.ok) {
             let json = await response.json();
