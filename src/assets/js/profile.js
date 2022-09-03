@@ -1,12 +1,7 @@
 var personal = Object.keys(page.args).length == 0;
 var id = Number.parseInt(personal ? user.id : page.args.id)
 var pageUser = null;
-LoadProfilePageElements();
 InitElementValues()
-function LoadProfilePageElements() {
-    LoadAnalytics();
-    LoadSettings();
-}
 async function LoadSettings() {
     let personalSection = $("section#personal")[0];
     let html = await $.get('html/auth/profile-sections/personal-section.html');
@@ -27,6 +22,96 @@ async function LoadSettings() {
     $("#upload-profile-banner")[0].style.backgroundImage = $("#landing.profile")[0].style.backgroundImage = `url('${BannerImage()}')`
     $("#upload-profile-image")[0].style.backgroundImage = $("#landing .profile-image")[0].style.backgroundImage = `url('${ProfileImage()}')`
 
+    if (user.git.hasGitReadme) {
+        $("toggle#use-git-about")[0].style.display = "";
+        $("#use-git-about").on('click', e => {
+            let value = $(e.currentTarget).attr('value') != "true";
+            $("#about-box")[0].disabled = value;
+            $("#save-profile-btn")[0].disabled = false;
+            $(e.currentTarget).attr("modified", "")
+            loadAbout(value)
+        })
+    }
+
+    $("#use-git-about").attr('value', user.git.useReadme)
+
+    $("#logout-btn").on('click', () => {
+        user = null;
+        ipcRenderer.send("setCookies", { name: "auth_email", value: "", path: "/", url: host, expirationDate: new Date("2000").toUTCString() })
+        ipcRenderer.send("setCookies", { name: "auth_token", value: "", path: "/", url: host, expirationDate: new Date("2000").toUTCString() })
+        Navigate("auth", "login")
+    })
+
+    $("#save-profile-btn").on('click', async () => {
+        $("#save-profile-btn")[0].disabled = true;
+        Array.from($("[setting][modified]")).forEach(async e => {
+            let name = $(e).attr('setting');
+            let value = e.value == null ? $(e).attr("value") : e.value;
+            let data = new FormData();
+            data.append("name", name);
+            data.append("value", value);
+            let loading = new LoadingScreen("Saving...")
+            await APICall("auth", "settings", "PATCH", null, data)
+            
+            $(e).removeAttr("modified")
+            loading.unload();
+        })
+    })
+    $("#about-box").on('keyup', e => {
+        updateAbout(e.currentTarget.value)
+    })
+    $("[setting]").on('keyup', e => {
+        $("#save-profile-btn")[0].disabled = false;
+        if (e.key == "Enter") {
+            $("#save-profile-btn")[0].click();
+        }
+        $(e.currentTarget).attr("modified", "")
+    })
+
+    $("#upload-profile-image.file-upload").on('click', e => {
+        let input = document.createElement('input');
+        input.type = "file"
+        input.accept = "image/*";
+        $(input).on('change', l => {
+            let file = l.currentTarget.files[0];
+            let popup = new ImagePopup(e.currentTarget, file, 1 / 1, true, async base => {
+                let data = new FormData();
+                data.append("base64", base);
+                let loading = new LoadingScreen("Uploading Profile");
+                await fetch(`${host}/api/auth/image/profile`, { method: "POST", body: data })
+                let response = await APICall("auth", "image/profile", "POST", null, data)
+                if (response.ok()) {
+
+                }
+                Array.from($(".profile-image")).forEach(item => {
+                    item.style.backgroundImage = `url("data:image/png;base64,${base}")`
+                })
+                loading.unload();
+            });
+            popup.open();
+        })
+        input.click();
+    })
+
+    $("#upload-profile-banner.file-upload").on('click', e => {
+        let input = document.createElement('input');
+        input.type = "file"
+        input.accept = "image/*";
+        $(input).on('change', l => {
+            let file = l.currentTarget.files[0];
+            let popup = new ImagePopup(e.currentTarget, file, 16 / 3.6667, false, async base => {
+                let data = new FormData();
+                data.append("base64", base);
+                let loading = new LoadingScreen("Uploading Banner");
+                await fetch(`${host}/api/auth/image/banner`, { method: "POST", body: data })
+                $(".profile#landing")[0].style.backgroundImage = `url("data:image/png;base64,${base}")`
+                loading.unload();
+            });
+            popup.open();
+        })
+        input.click();
+    })
+
 }
 async function LoadAnalytics() {
     if (user.createdProducts.length != 0) {
@@ -40,6 +125,8 @@ async function InitElementValues() {
 
     if (personal) {
         pageUser = user;
+        LoadSettings();
+        LoadAnalytics();
     } else {
         let response = await fetch(`${host}/api/auth/user?id=${id}`);
         if (response.ok) {
@@ -67,30 +154,6 @@ async function InitElementValues() {
     }
 }
 
-
-
-$("#logout-btn").on('click', () => {
-    user = null;
-    ipcRenderer.send("setCookies", { name: "auth_email", value: "", path: "/", url: host, expirationDate: new Date("2000").toUTCString() })
-    ipcRenderer.send("setCookies", { name: "auth_token", value: "", path: "/", url: host, expirationDate: new Date("2000").toUTCString() })
-    Navigate("auth", "login")
-})
-
-$("#save-profile-btn").on('click', async () => {
-    $("#save-profile-btn")[0].disabled = true;
-    Array.from($("[setting][modified]")).forEach(async e => {
-        let name = $(e).attr('setting');
-        let value = e.value == null ? $(e).attr("value") : e.value;
-        let data = new FormData();
-        data.append("name", name);
-        data.append("value", value);
-        await fetch(`${host}/api/auth/settings`, { method: "PATCH", body: data })
-        $(e).removeAttr("modified")
-    })
-})
-$("#about-box").on('keyup', e => {
-    updateAbout(e.currentTarget.value)
-})
 function updateAbout(html) {
     let converter = new showdown.Converter()
     $("#about-rendering")[0].innerHTML = converter.makeHtml(html);
@@ -109,59 +172,3 @@ async function loadAbout(git) {
         $("#about-box")[0].disabled = git
     }
 }
-
-$("[setting]").on('keyup', e => {
-    $("#save-profile-btn")[0].disabled = false;
-    if (e.key == "Enter") {
-        $("#save-profile-btn")[0].click();
-    }
-    $(e.currentTarget).attr("modified", "")
-})
-
-$("#upload-profile-image.file-upload").on('click', e => {
-    let input = document.createElement('input');
-    input.type = "file"
-    input.accept = "image/*";
-    $(input).on('change', l => {
-        let file = l.currentTarget.files[0];
-        let popup = new ImagePopup(e.currentTarget, file, 1 / 1, true, async base => {
-            let data = new FormData();
-            data.append("base64", base);
-            let loading = new LoadingScreen("Uploading Profile", "This may take a moment!");
-            await fetch(`${host}/api/auth/image/profile`, { method: "POST", body: data })
-            Array.from($(".profile-image")).forEach(item => {
-                item.style.backgroundImage = `url("data:image/png;base64,${base}")`
-            })
-            loading.unload();
-        });
-        popup.open();
-    })
-    input.click();
-})
-
-$("#upload-profile-banner.file-upload").on('click', e => {
-    let input = document.createElement('input');
-    input.type = "file"
-    input.accept = "image/*";
-    $(input).on('change', l => {
-        let file = l.currentTarget.files[0];
-        let popup = new ImagePopup(e.currentTarget, file, 16 / 3.6667, false, async base => {
-            let data = new FormData();
-            data.append("base64", base);
-            let loading = new LoadingScreen("Uploading Banner", "This may take a moment!");
-            await fetch(`${host}/api/auth/image/banner`, { method: "POST", body: data })
-            $(".profile#landing")[0].style.backgroundImage = `url("data:image/png;base64,${base}")`
-            loading.unload();
-        });
-        popup.open();
-    })
-    input.click();
-})
-
-$("#use-git-about").on('click', e => {
-    let value = $(e.currentTarget).attr('value') != "true";
-    $("#about-box")[0].disabled = value;
-    $("#save-profile-btn")[0].disabled = false;
-    $(e.currentTarget).attr("modified", "")
-    loadAbout(value)
-})
