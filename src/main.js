@@ -5,6 +5,9 @@ const env = require('./environment')
 var win;
 var tray;
 var tray_balloon_seen = false;
+var titleInterval;
+app.whenReady().then(createWindow).then(ipcFunctions).then(createTray);
+
 function createWindow() {
     win = new BrowserWindow({
         height: 720,
@@ -19,13 +22,13 @@ function createWindow() {
             preload: path.join(__dirname, "preload.js")
         },
         icon: path.join(__dirname, 'assets', "images", "icons", 'logo.png'),
-        title: 'OpenDSM',
     });
     if (env.isWindows)
         win.frame = false;
-    win.setTitle('OpenDSM');
+    let title = "OpenDSM - The Open Digital Marketplace"
     win.setMenu(null);
-    win.loadFile(path.join(__dirname, 'assets', "html", 'index.html'));
+    win.loadFile(path.join(__dirname, 'assets', "html", 'index.html'))
+    win.setTitle(title);
     win.webContents.on('before-input-event', (event, input) => {
         if (input.control && input.shift && input.key.toLowerCase() === 'i') {
             event.preventDefault();
@@ -44,22 +47,32 @@ function createTray() {
             type: "normal",
             enabled: true,
             icon: nativeImage.createFromPath(path.join(__dirname, 'assets', "images", "icons", 'icon.ico')).resize({ width: 16 }),
-            click: () => {
-                showWindow()
-            }
+            click: () => { showWindow() }
         },
         { type: "separator" },
         {
             label: "Profile",
             type: "normal",
             click: () => {
-                createWindow();
-                win.show();
+                showWindow()
+                setTimeout(() => {
+                    win.webContents.send('navigate', { controller: "auth", name: "profile", args: [] })
+                }, 1000)
+            }
+        },
+        {
+            label: "My Library", type: "normal",
+            click: () => {
+                showWindow()
                 win.webContents.send('navigate', { controller: "auth", name: "profile", args: [] })
             }
         },
-        { label: "My Library", type: "normal" },
-        { label: "Downloads", type: "normal" },
+        {
+            label: "Downloads", type: "normal",
+            click: () => {
+                showWindow()
+            }
+        },
         { type: "separator" },
         { label: "Exit", type: "normal", click: () => { app.quit(); } },
     ])
@@ -75,14 +88,11 @@ function createTray() {
     })
 }
 
-app.whenReady().then(createWindow).then(ipcFunctions).then(createTray);
 
 app.on('window-all-closed', () => {
     win = null;
+    clearInterval(titleInterval);
 });
-app.on('browser-window-focus', ()=>{
-    win.setTitle("OpenDSM");
-})
 
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -159,7 +169,7 @@ function showWindow() {
         createWindow();
         win.show();
         win.focus();
-    }else{
+    } else {
         win.show();
         win.focus();
     }
