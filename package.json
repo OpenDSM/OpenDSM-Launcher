@@ -5,7 +5,8 @@
   "main": "src/main.js",
   "scripts": {
     "start": "electron .",
-    "package-win": "electron-packager . OpenDSM --platform=win32 --out ./builds --overwrite --icon=src\\assets\\images\\icons\\icon.ico",
+    "package": "npm run package-win && npm run package-linux && npm run package-mac",
+    "package-win": "electron-packager . OpenDSM --platform=win32 --out ./builds --overwrite --icon=src/assets/images/icons/icon.ico",
     "package-linux": "electron-packager . OpenDSM --platform=linux --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png",
     "package-mac": "electron-packager . OpenDSM --platform=darwin,mas --out ./builds --overwrite --icon=src\\assets\\images\\icons\\logo.png"
   },
