@@ -1,13 +1,18 @@
 ﻿class LoadingScreen {
     #view
-    constructor(title, message) {
+    constructor(title, message = "") {
+        if (message == "") {
+            let fs = require('fs');
+            let file = fs.readFileSync("src/assets/misc/loading_retorts.txt").toString();
+            let retorts = file.split('\n');
+            let selection = Math.floor(Math.random() * retorts.length);
+            message = retorts[selection];
+        }
         $("body")[0].style.overflow = "hidden"
         this.#view = document.createElement("div");
         this.#view.classList.add("fullscreen-view", "list", "vertical", "centered");
-
         let header = document.createElement('h1');
         header.innerHTML = title;
-
         let body = document.createElement("p");
         body.classList.add("paragraph-1");
         body.innerHTML = message;
