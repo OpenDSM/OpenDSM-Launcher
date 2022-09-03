@@ -58,7 +58,7 @@ async function Navigate(controller, name, args = {}) {
     controller = controller.toLowerCase();
     name = name.toLowerCase();
 
-    let loading = new LoadingScreen(`Loading...`, "")
+    let loading = new LoadingScreen(`Loading...`)
     let url = `html/${controller}/${name}.html`
     page = { controller: controller, name: name, url, args }
     if (!await IsLoggedIn()) {
@@ -93,6 +93,10 @@ async function LoadWindowDecoration() {
 
 async function IsLoggedIn() {
     if (user != null) return true;
+    return await RelogUser();
+}
+
+async function RelogUser(){
     let cookies = await ipcRenderer.invoke("getCookies", {});
     if (cookies.length == 0) return false;
     let email = "";
@@ -173,7 +177,7 @@ async function CreateProductElement(id) {
         })
 
 
-        navigateAction = () => {
+        let navigateAction = () => {
             Navigate("product", "index", { id: id })
         }
         $(banner).on('click', navigateAction)
@@ -228,25 +232,16 @@ function getPlatformIcon(platform) {
     return icon;
 }
 
-// /api/auth/user?id=1 -> APICall("auth", "user", {id:1})
-async function APICall(controller, page = "", http_method = "GET", parameters = {}, formData = {}) {
-    // page = page == "" ? "" : `/${page}`
+
+async function APICall(controller, page = "", http_method = "GET", parameters = {}, data = new FormData()) {
+    http_method = http_method.toUpperCase();
     let url = `${host}/api/${controller}/${page}`
-    let data = null;
     if (parameters != null && Object.keys(parameters).length != 0) {
         for (let i = 0; i < Object.keys(parameters).length; i++) {
             let key = Object.keys(parameters)[i];
             let value = Object.values(parameters)[i];
             let seperator = i == 0 ? "?" : "&";
             url += `${seperator}${key}=${value}`
-        }
-    }
-    if (formData != null && Object.keys(formData).length != 0) {
-        data = new FormData();
-        for (let i = 0; i < Object.keys(formData).length; i++) {
-            let key = Object.keys(formData)[i] + "";
-            let value = Object.values(formData)[i] + "";
-            data.append(key, value);
         }
     }
 
@@ -269,7 +264,7 @@ async function APICall(controller, page = "", http_method = "GET", parameters = 
 
     url = encodeURI(url);
     let http_options
-    if (data != null && http_method.toLowerCase() != "get" && http_method.toLowerCase() != "head") {
+    if (data != null && Array.from(data).length > 0 && http_method.toLowerCase() != "get" && http_method.toLowerCase() != "head") {
         http_options = {
             method: http_method,
             headers: headers,
