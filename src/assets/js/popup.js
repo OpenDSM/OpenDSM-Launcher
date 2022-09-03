@@ -256,21 +256,20 @@ class ActivateDeveloperAccountPopup extends Popup {
             if (git_username == "" || git_token == "") {
                 alert('Git Username and Token MUST be filled out!');
             } else {
-                let headers = new Headers();
-                headers.append("cookies", "[{},{}]")
-
                 let data = new FormData();
                 data.append("git_username", git_username)
                 data.append("git_token", git_token)
-                let loading = new LoadingScreen("Checking Credentials...", "This shouldn't take long...")
-                let response = await fetch(`${host}/api/auth/activate-dev-account`, { method: "POST", body: data, headers: { } })
+                let loading = new LoadingScreen("Checking Credentials...")
+                let response = await APICall("auth", "activate-dev-account", "POST", null, data);
 
                 if (response.ok) {
-                    window.location.reload();
+                    await RelogUser();
+                    await Reload()
                 } else {
                     alert("Unable to activate account! Please check your credentials!");
                 }
                 loading.unload();
+                this.close();
             }
         })
     }
@@ -290,7 +289,7 @@ class YoutubeSearchPopup extends CenteredPopup {
         })
         $("#load-yt-list").on("click", async () => {
             let id = $("#channel-id")[0].value;
-            let loading = new LoadingScreen("Getting Youtube Videos", "This may take a moment...");
+            let loading = new LoadingScreen("Getting Youtube Videos");
             let response = await fetch(`${host}/api/yt/channel/${id}`)
             loading.unload();
             $("body")[0].style.overflow = "hidden"
@@ -549,7 +548,7 @@ class EditVersionPopup extends Popup {
         $(element).find("#changelog-box")[0].value = this.Changelog;
         $(element).find("#release-type")[0].value = this.Release;
         $(element).find("#finish-button").on('click', async () => {
-            let loading = new LoadingScreen("Updating Version", "Don't go anywhere!")
+            let loading = new LoadingScreen("Updating Version")
 
             this.close();
 
@@ -589,7 +588,7 @@ class DeleteVersionPopup extends CenteredPopup {
     async open() {
         let element = await super.open();
         $("#delete-button").on('click', async () => {
-            let loading = new LoadingScreen("Deleting Version", "Don't go anywhere!")
+            let loading = new LoadingScreen("Deleting Version")
 
             this.close();
             let response = await fetch(`${host}/api/product/${this.ProductID}/version/${this.ID}`, { method: "DELETE" })
