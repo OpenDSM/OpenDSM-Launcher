@@ -17,10 +17,29 @@ async function LoadSettings() {
             new ActivateDeveloperAccountPopup().open()
         }
     })
-    $("#upload-profile-image")[0].style.background = `transparent`
-    $("#upload-profile-banner")[0].style.background = `transparent`
+    $("#upload-profile-image")[0].style.backgroundColor = `transparent`
+    $("#upload-profile-image")[0].style.backgroundPosition = `center`
+    $("#upload-profile-image")[0].style.backgroundSize = `contain`
+    $("#upload-profile-image")[0].style.backgroundRepeat = `no-repeat`
+
+    $("#upload-profile-banner")[0].style.backgroundColor = `transparent`
+    $("#upload-profile-banner")[0].style.backgroundPosition = `center`
+    $("#upload-profile-banner")[0].style.backgroundSize = `cover`
+    $("#upload-profile-banner")[0].style.backgroundRepeat = `no-repeat`
+
+    $("#landing.profile")[0].style.backgroundColor = `transparent`
+    $("#landing.profile")[0].style.backgroundPosition = `center`
+    $("#landing.profile")[0].style.backgroundSize = `cover`
+    $("#landing.profile")[0].style.backgroundRepeat = `no-repeat`
+
+    $("#landing .profile-image")[0].style.background = `transparent`
+    $("#landing .profile-image")[0].style.backgroundPosition = `stretch`
+    $("#landing .profile-image")[0].style.backgroundSize = `cover`
+    $("#landing .profile-image")[0].style.backgroundRepeat = `no-repeat`
+
     $("#upload-profile-banner")[0].style.backgroundImage = $("#landing.profile")[0].style.backgroundImage = `url('${BannerImage()}')`
     $("#upload-profile-image")[0].style.backgroundImage = $("#landing .profile-image")[0].style.backgroundImage = `url('${ProfileImage()}')`
+
 
     if (user.git.hasGitReadme) {
         $("toggle#use-git-about")[0].style.display = "";
@@ -34,6 +53,7 @@ async function LoadSettings() {
     }
 
     $("#use-git-about").attr('value', user.git.useReadme)
+    $("#about-box")[0].disabled = user.git.useReadme;
 
     $("#logout-btn").on('click', () => {
         user = null;
@@ -52,7 +72,7 @@ async function LoadSettings() {
             data.append("value", value);
             let loading = new LoadingScreen("Saving...")
             await APICall("auth", "settings", "PATCH", null, data)
-            
+
             $(e).removeAttr("modified")
             loading.unload();
         })
@@ -78,14 +98,18 @@ async function LoadSettings() {
                 let data = new FormData();
                 data.append("base64", base);
                 let loading = new LoadingScreen("Uploading Profile");
-                await fetch(`${host}/api/auth/image/profile`, { method: "POST", body: data })
                 let response = await APICall("auth", "image/profile", "POST", null, data)
-                if (response.ok()) {
-
+                if (response.ok) {
+                    Array.from($(".profile-image")).forEach(item => {
+                        item.style.backgroundImage = `url("data:image/png;base64,${base}")`
+                        item.style.backgroundColor = `transparent`
+                        item.style.backgroundPosition = `center`
+                        item.style.backgroundSize = `contain`
+                    })
+                    RelogUser();
+                } else {
+                    new ErrorPopup("Unable to Save Profile Image...", `Server returned ${response.status}`).open();
                 }
-                Array.from($(".profile-image")).forEach(item => {
-                    item.style.backgroundImage = `url("data:image/png;base64,${base}")`
-                })
                 loading.unload();
             });
             popup.open();
@@ -103,11 +127,28 @@ async function LoadSettings() {
                 let data = new FormData();
                 data.append("base64", base);
                 let loading = new LoadingScreen("Uploading Banner");
-                await fetch(`${host}/api/auth/image/banner`, { method: "POST", body: data })
-                $(".profile#landing")[0].style.backgroundImage = `url("data:image/png;base64,${base}")`
+                let response = await APICall("auth", "image/banner", "POST", null, data)
+                if (response.ok) {
+                    $(".profile#landing")[0].style.backgroundImage = `url("data:image/png;base64,${base}")`
+                    $(".profile#landing")[0].style.backgroundColor = `transparent`
+                    $(".profile#landing")[0].style.backgroundPosition = `center`
+                    $(".profile#landing")[0].style.backgroundSize = `cover`
+                    
+                    $("#upload-profile-banner")[0].style.backgroundImage = `url("data:image/png;base64,${base}")`
+                    $("#upload-profile-banner")[0].style.backgroundColor = `transparent`
+                    $("#upload-profile-banner")[0].style.backgroundPosition = `center`
+                    $("#upload-profile-banner")[0].style.backgroundSize = `cover`
+                    $("#upload-profile-banner")[0].style.backgroundRepeat = `no-repeat`
+                    RelogUser();
+                } else {
+                    new ErrorPopup("Unable to Save Banner Image...", `Server returned ${response.status}`).open();
+                }
+
                 loading.unload();
             });
             popup.open();
+
+
         })
         input.click();
     })
