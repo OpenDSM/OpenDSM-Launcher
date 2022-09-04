@@ -146,7 +146,7 @@ ipcRenderer.on('navigate', (event, arg) => {
 
 
 async function CreateProductElement(id) {
-    let response = await fetch(`${host}/api/product/${id}`)
+    let response = await APICall("product", id);
     if (response.ok) {
         let json = await response.json();
 
