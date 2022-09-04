@@ -233,7 +233,7 @@ function getPlatformIcon(platform) {
 }
 
 
-async function APICall(controller, page = "", http_method = "GET", parameters = {}, data = new FormData()) {
+async function APICall(controller, page = "", http_method = "GET", parameters = {}, data = new FormData()) { 
     http_method = http_method.toUpperCase();
     let url = `${host}/api/${controller}/${page}`
     if (parameters != null && Object.keys(parameters).length != 0) {
