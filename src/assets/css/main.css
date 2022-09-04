@@ -1526,8 +1526,8 @@ body::-webkit-scrollbar-track {
 /*#region Cropper */
 
 .image-container {
-    max-height: calc(100% - 75px);
-    min-height: calc(100% - 75px);
+    max-height: calc(100% - 105px);
+    min-height: calc(100% - 105px);
     overflow: hidden;
 }
 
