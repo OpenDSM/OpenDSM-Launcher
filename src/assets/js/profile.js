@@ -133,7 +133,7 @@ async function LoadSettings() {
                     $(".profile#landing")[0].style.backgroundColor = `transparent`
                     $(".profile#landing")[0].style.backgroundPosition = `center`
                     $(".profile#landing")[0].style.backgroundSize = `cover`
-                    
+
                     $("#upload-profile-banner")[0].style.backgroundImage = `url("data:image/png;base64,${base}")`
                     $("#upload-profile-banner")[0].style.backgroundColor = `transparent`
                     $("#upload-profile-banner")[0].style.backgroundPosition = `center`
@@ -174,10 +174,19 @@ async function InitElementValues() {
             let json = await response.json();
             pageUser = json;
         }
-        $("#landing.profile")[0].style.backgroundImage = `url('${BannerImage(pageUser)}')`
-        $("#landing .profile-image")[0].style.backgroundImage = `url('${ProfileImage(pageUser)}')`
-        $("#landing.profile")[0].style.backgroundImage = `url('${BannerImage(pageUser)}')`
-        $("#landing .profile-image")[0].style.backgroundImage = `url('${ProfileImage(pageUser)}')`
+
+        $("#landing.profile")[0].style.backgroundImage = `url('${host}${pageUser.images.banner.path}')`
+        $("#landing.profile")[0].style.backgroundColor = `transparent`
+        $("#landing.profile")[0].style.backgroundPosition = `center`
+        $("#landing.profile")[0].style.backgroundSize = `cover`
+        $("#landing.profile")[0].style.backgroundRepeat = `no-repeat`
+
+        $("#landing .profile-image")[0].style.backgroundImage = `url('${host}${pageUser.images.profile.path}')`
+        $("#landing .profile-image")[0].style.backgroundColor = `transparent`
+        $("#landing .profile-image")[0].style.backgroundPosition = `stretch`
+        $("#landing .profile-image")[0].style.backgroundSize = `cover`
+        $("#landing .profile-image")[0].style.backgroundRepeat = `no-repeat`
+
     }
     $(".name.profile-name")[0].innerText = pageUser.username
 
