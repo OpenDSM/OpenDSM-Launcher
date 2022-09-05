@@ -1,4 +1,6 @@
-﻿(() => {
+﻿var id = page.args.id;
+(() => {
+    var showdown = require('../lib/showdown.min')
     updateAbout($("#product-page-overview")[0].innerHTML)
     LoadPosterVideo();
     LoadVersions()
@@ -14,14 +16,12 @@
             $("video.poster")[0].src = $("video.poster")[0].dataset.src;
         }
     }
-
-    document.cookie = `page_view=; path=/product/${id}`
 }).call();
 
 
 async function LoadReviews(rating = -1) {
     let section = $("section#reviews")[0]
-    let url = `/product/${id}/element/Reviews?filter=${rating}`;
+    let url = `${host}/product/${id}/element/Reviews?filter=${rating}`;
     let html = await $.get(url);
     section.innerHTML = html;
     InitElements()
@@ -147,7 +147,7 @@ async function LoadReviews(rating = -1) {
 }
 async function LoadVersions() {
     let section = $("section#versions")[0]
-    let url = `/product/${id}/element/Versions`;
+    let url = `${host}/product/${id}/element/Versions`;
     let html = await $.get(url);
     section.innerHTML = html;
     //await new Promise(r => setTimeout(r, 700))
