@@ -1,4 +1,45 @@
-﻿$("#use-readme-toggle").on('click', e => {
+﻿LoadRepositoryList()
+LoadTOS()
+LoadTags()
+async function LoadRepositoryList() {
+    let element = $("#repo-dropdown .dropdown-body")[0]
+
+    let response = await APICall("auth", "repositories");
+    if (response.ok) {
+        let json = await response.json();
+        Array.from(json).forEach(i => {
+            let link = document.createElement('div');
+            link.classList.add('dropdown-item');
+            $(link).on('mousedown', () => {
+                updateRepository(i.name.replaceAll('-', " "))
+            })
+            link.innerText = i.name;
+            $(link).attr('repo_id', i.id)
+            element.appendChild(link)
+        })
+    } else {
+        Navigate("home", "index");
+    }
+}
+async function LoadTags() {
+    let response = await APICall("product", "tags");
+    if (response.ok) {
+        Array.from(await response.json()).forEach(i => {
+            let tag = document.createElement('div');
+            tag.classList.add('dropdown-item')
+            tag.innerText = i.name;
+            $(tag).attr('tag', i.id);
+            $("#tags-dropdown .dropdown-body")[0].appendChild(tag)
+        })
+    }
+}
+
+async function LoadTOS() {
+    let response = await fetch(`${host}/tos`);
+    let html = await response.text();
+    $("#tos")[0].innerHTML = html;
+}
+$("#use-readme-toggle").on('click', e => {
     let value = $(e.currentTarget).attr("value") == "true";
     $('#about-input')[0].style.display = value ? '' : 'none'
 })
@@ -76,6 +117,7 @@ $("#submit-btn").on('click', async () => {
     } else {
         let repoName = $("#github-repository-search-box")[0].value;
         let projectName = $("#project-name-box")[0].value;
+        let shortSummery = $("#short-summery-box")[0].value;
         let tags = $("#tags-search-box")[0].value;
         let keywords = $("#keywords-box")[0].value;
         let youtubeKey = $("#yt-key-box")[0].value;
@@ -90,30 +132,33 @@ $("#submit-btn").on('click', async () => {
         Array.from($(".tmp-gallery-image")).forEach(item => {
             galleryImages.push(item.style.backgroundImage.replace("url(", "").replace(")", "").replaceAll("\"", "").replaceAll("'", ""))
         })
-        let data = {
-            name: projectName,
-            gitRepoName: repoName,
-            user_id: user_id,
-            yt_key: youtubeKey,
-            subscription,
-            price,
-            keywords: keywords.toLowerCase(),
-            tags,
-            icon,
-            banner,
-            use_git_readme: useGitReadme,
-        };
+        let data = new FormData();
+        data.append("name", projectName);
+        data.append("gitRepoName", repoName);
+        data.append("shortSummery", shortSummery);
+        data.append("user_id", user.id);
+        if (youtubeKey != "") {
+            data.append("yt_key", youtubeKey);
+        }
+        data.append("subscription", subscription);
+        data.append("price", price);
+        data.append(`keywords`, keywords.toLowerCase());
+        data.append(`tags`, tags);
+        data.append("icon", icon);
+        data.append("banner", banner);
+        data.append("use_git_readme", useGitReadme);
+        data.append("about", useGitReadme ? "" : about);
         if (galleryImages.length > 0) {
             for (let i = 0; i < galleryImages.length; i++) {
                 if (galleryImages[i] != null && galleryImages[i] != "")
                     data.append(`gallery[${i}]`, galleryImages[i]);
             }
         }
-        let loadingScreen = new LoadingScreen("Creating Product");
-        let response = await APICall("product", "", "POST", null, data)
+        let loadingScreen = new LoadingScreen("Creating Product...");
+        let response = await APICall("product", "", "POST", null, data);
         if (response.ok) {
             let json = await response.json();
-            window.location.href = `/product/${json.id}`
+            await Navigate("product", "index", { id: json.id });
         }
         loadingScreen.unload();
     }
