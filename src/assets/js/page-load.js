@@ -32,17 +32,21 @@ async function LoadPageElements() {
             Array.from($("action")).forEach(action => {
                 let controller = $(action).attr('controller').toLowerCase();
                 let name = $(action).attr('name').toLowerCase();
-                $(action).on('click', async () => {
-                    await Navigate(controller, name)
+                if (controller != "" && controller != null) {
+                    let clickHandler = async () => {
+                        await Navigate(controller, name)
 
-                    $("#popup")[0].classList.remove('active')
-                    $("body")[0].classList.remove('popup-active')
-                    setTimeout(() => {
-                        $("#popup .content")[0].innerHTML = "";
-                    }, 500)
+                        $("#popup")[0].classList.remove('active')
+                        $("body")[0].classList.remove('popup-active')
+                        setTimeout(() => {
+                            $("#popup .content")[0].innerHTML = "";
+                        }, 500)
 
-                    $("body")[0].style.overflow = ""
-                })
+                        $("body")[0].style.overflow = ""
+                    }
+                    $(action).unbind("click")
+                    $(action).on('click', clickHandler);
+                }
             })
         }
     }, 500)
@@ -61,6 +65,7 @@ async function Navigate(controller, name, args = {}) {
     let loading = new LoadingScreen(`Loading...`)
     let url = `html/${controller}/${name}.html`
     page = { controller: controller, name: name, url, args }
+
     if (!await IsLoggedIn()) {
         url = `html/auth/login.html`
         page = { controller: "auth", name: "login", url, args }
@@ -74,6 +79,7 @@ async function Navigate(controller, name, args = {}) {
     } else {
         await $("main").load(url);
         await LoadPageElements();
+        window.scrollTo(0,0);
         setTimeout(() => {
             InitElements();
             $("#hamburger-menu-item")[0].style.display = "";
@@ -96,7 +102,7 @@ async function IsLoggedIn() {
     return await RelogUser();
 }
 
-async function RelogUser(){
+async function RelogUser() {
     let cookies = await ipcRenderer.invoke("getCookies", {});
     if (cookies.length == 0) return false;
     let email = "";
@@ -164,10 +170,10 @@ async function CreateProductElement(id) {
         name.innerText = json.name;
 
         let author = document.createElement('div');
-        let authorJson = await (await fetch(`${host}/api/auth/user?id=${json.user}`)).json();
-        author.innerText = authorJson.username;
+        
+        author.innerText = json.user.name;
         $(author).on('click', () => {
-            Navigate("auth", "profile", { id: json.user })
+            Navigate("auth", "profile", { id: json.user.id })
         })
 
         let platforms = document.createElement("span");
@@ -233,7 +239,7 @@ function getPlatformIcon(platform) {
 }
 
 
-async function APICall(controller, page = "", http_method = "GET", parameters = {}, data = new FormData()) { 
+async function APICall(controller, page = "", http_method = "GET", parameters = {}, data = new FormData()) {
     http_method = http_method.toUpperCase();
     let url = `${host}/api/${controller}/${page}`
     if (parameters != null && Object.keys(parameters).length != 0) {
